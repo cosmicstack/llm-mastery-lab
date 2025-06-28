@@ -1,2 +1,7 @@
 # Ignore all pycache files
 __pycache__/
+
+# Ignore model_cache files
+model_cache/
+
+system.txt
