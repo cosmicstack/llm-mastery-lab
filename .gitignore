@@ -4,4 +4,4 @@ __pycache__/
 # Ignore model_cache files
 model_cache/
 
-system.txt
+system_message.py

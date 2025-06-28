@@ -1,17 +1,14 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import warnings
+from system_message import SYSTEM_MESSAGE 
 
 warnings.filterwarnings("ignore", message="To copy construct from a tensor.*", category=UserWarning)
 
 class BaseLLM:
     def __init__(self, checkpoint: str, device: str = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"):
-        self.model = AutoModelForCausalLM.from_pretrained(
-            checkpoint, 
-            cache_dir="./model_cache",
-            torch_dtype=torch.float16 if device != "cpu" else torch.float32
-        ).to(device)
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint, cache_dir="./model_cache")
+        self.model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
+        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.device = device
@@ -33,6 +30,8 @@ class BaseLLM:
     ):
         formatted_prompt = self._format_prompt(prompt, system)
         inputs = self.tokenizer(formatted_prompt, return_tensors="pt").to(self.device)
+        input_length = inputs['input_ids'].shape[1]
+        
         outputs = self.model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
@@ -41,22 +40,22 @@ class BaseLLM:
             do_sample=True,
             eos_token_id=self.tokenizer.eos_token_id,
         )
-        # print(f"_generate/outputs: {outputs}")
-        response = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-        # print(f"_generate/response: {response}")
-        return response[0][(len(system)+len(prompt)+1):].strip()
+        
+        generated_tokens = outputs[0][input_length:]
+        response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
+        return response.strip()
     
     def __call__(self, *args, **kwds):
         return self._generate(*args, **kwds)
 
 if __name__ == "__main__":
-    llm = BaseLLM("microsoft/phi-3-mini-4k-instruct")
     
-    # System goes here
-
+    # llm = BaseLLM("HuggingFaceTB/SmolLM2-360M-Instruct")
+    llm = BaseLLM("Qwen/Qwen1.5-1.8B-Chat")
+    
     prompt = input("\nEnter message: \n")
     
-    response = llm(prompt, system=system)
+    response = llm(prompt, system=SYSTEM_MESSAGE)
     print("\n\n")
     print(response)
     print("\n\n")
