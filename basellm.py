@@ -13,6 +13,7 @@ class BaseLLM:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.device = device
     
+    #TODO: overload _format_prompt to handle both single string prompts and list of messages
     def _format_prompt(self, prompt: str, system: str = None):
         messages = []
         if system:
