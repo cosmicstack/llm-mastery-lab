@@ -1,6 +1,7 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import warnings
+from typing import overload, Union
 from system_message import SYSTEM_MESSAGE 
 
 warnings.filterwarnings("ignore", message="To copy construct from a tensor.*", category=UserWarning)
@@ -13,13 +14,27 @@ class BaseLLM:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.device = device
     
-    #TODO: overload _format_prompt to handle both single string prompts and list of messages
-    def _format_prompt(self, prompt: str, system: str = None):
-        messages = []
-        if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
-        return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    @overload
+    def _format_prompt(self, prompt: str, system: str = None) -> str:
+        """
+        Formats a single string prompt with an optional system message.
+        """
+    
+    @overload
+    def _format_prompt(self, prompt: list, system: str = None) -> str:
+        """
+        If the prompt is a list of dict, then does nothing
+        """
+    
+    def _format_prompt(self, prompt: Union[str, list], system: str = None):
+        if isinstance(prompt, list):
+            return self.tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True)
+        else:
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     
     def _generate(
             self,
