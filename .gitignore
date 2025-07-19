@@ -4,4 +4,7 @@ __pycache__/
 # Ignore model_cache files
 model_cache/
 
+# Ignore all files inside data directory
+data/
+
 system_message.py
