@@ -1,3 +1,4 @@
+import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import warnings
@@ -6,10 +7,15 @@ from system_message import SYSTEM_MESSAGE
 
 warnings.filterwarnings("ignore", message="To copy construct from a tensor.*", category=UserWarning)
 
+with open("hf_token.txt") as f:
+    hf_token = f.read().strip()
+
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = hf_token
+
 class BaseLLM:
     def __init__(self, checkpoint: str, device: str = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"):
-        self.model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+        self.model = AutoModelForCausalLM.from_pretrained(checkpoint, token=hf_token).to(device)
+        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=hf_token)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.device = device
@@ -67,7 +73,7 @@ class BaseLLM:
 if __name__ == "__main__":
     
     # llm = BaseLLM("HuggingFaceTB/SmolLM2-360M-Instruct")
-    llm = BaseLLM("Qwen/Qwen1.5-1.8B-Chat")
+    llm = BaseLLM("google/gemma-3-270m")
     
     prompt = input("\nEnter message: \n")
     
