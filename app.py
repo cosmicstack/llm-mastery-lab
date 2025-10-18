@@ -14,7 +14,7 @@ def generate_response(message, history):
     #TODO: Try https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GPTQ
     #TODO: Try https://huggingface.co/unsloth/gemma-2b-it-bnb-4bit
 
-    llm = BaseLLM("google/gemma-3-270m")
+    llm = BaseLLM("meta-llama/Llama-3.2-3B-Instruct")
     response = llm(thread)
     return response
 

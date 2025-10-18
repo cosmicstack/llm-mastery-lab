@@ -73,7 +73,7 @@ class BaseLLM:
 if __name__ == "__main__":
     
     # llm = BaseLLM("HuggingFaceTB/SmolLM2-360M-Instruct")
-    llm = BaseLLM("google/gemma-3-270m")
+    llm = BaseLLM("meta-llama/Llama-3.2-3B-Instruct")
     
     prompt = input("\nEnter message: \n")
     
